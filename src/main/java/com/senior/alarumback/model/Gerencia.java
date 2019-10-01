@@ -13,6 +13,9 @@ public class Gerencia {
     private String ds_gerencia;
     private String nm_responsavel;
 
+    public Gerencia() {
+    }
+
     public Gerencia(String ds_gerencia, String nm_responsavel) {
         this.ds_gerencia = ds_gerencia;
         this.nm_responsavel = nm_responsavel;
