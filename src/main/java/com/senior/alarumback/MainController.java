@@ -13,14 +13,19 @@ import com.senior.alarumback.model.UsuarioLogin;
 import javafx.event.ActionEvent;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -74,24 +79,22 @@ public class MainController implements Initializable {
     void btnSalvarAction(ActionEvent event) {
         Map listaUsuarios;
         try {
-           listaUsuarios = getListaUsuarios();
-
-            FirebaseDatabase database = FirebaseDatabase.getInstance(); 
-//            listaUsuarios.put(user.getDs_login(), user);
+            listaUsuarios = getListaUsuarios();
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
             DatabaseReference myRootRef = database.getReference();
-         //   myRootRef.child("usuarios").setValueAsync(listaUsuarios);
+            
         } catch (Exception ex) {
             Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
         }
     }
 
-    public static Map getListaGerencias() throws InterruptedException, IOException {
+    public static List<Gerencia> getListaGerencias() throws InterruptedException, IOException {
         final AtomicBoolean done = new AtomicBoolean(false);
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRootRef = database.getReference();
         DatabaseReference userRef = myRootRef.child("gerencias");
-        final Map listaUsuarios = new HashMap();
+        final List<Gerencia> listaGerencias = new ArrayList<>();
         userRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -100,7 +103,7 @@ public class MainController implements Initializable {
                     while (dataSnapshots.hasNext()) {
                         DataSnapshot dataSnapshotChild = dataSnapshots.next();
                         Gerencia ger = dataSnapshotChild.getValue(Gerencia.class);
-                        listaUsuarios.put(ger.getDs_gerencia() , ger);
+                        listaGerencias.add(ger);
                     }
                     done.set(true);
                 } catch (Exception e) {
@@ -117,7 +120,7 @@ public class MainController implements Initializable {
             }
         });
         while (!done.get());
-        return listaUsuarios;
+        return listaGerencias;
     }
 
     @FXML
@@ -138,6 +141,12 @@ public class MainController implements Initializable {
             stagePrincipal.show();
             if (!logged) {
                 logged = root.isLogou();
+                txtNome.setText(root.getLogin());
+                txtNome.setEditable(false);
+                listGroup.getItems().clear();
+                listGroup.getItems().addAll(((Collection)getListaGerencias()));
+            }
+            if (logged) {
             }
 
             atualizaVisibilidade();

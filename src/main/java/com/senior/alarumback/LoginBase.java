@@ -16,6 +16,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.jfoenix.controls.JFXButton;
+import com.jfoenix.controls.JFXPasswordField;
 import com.jfoenix.controls.JFXTextField;
 import com.senior.alarumback.model.UsuarioLogin;
 import java.io.IOException;
@@ -28,6 +29,8 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
@@ -54,7 +57,7 @@ public class LoginBase extends GridPane {
     protected final RowConstraints rowConstraints6;
     protected final RowConstraints rowConstraints7;
     protected final RowConstraints rowConstraints8;
-    protected final JFXTextField jFXTextField;
+    protected final JFXPasswordField jFXTextField;
     protected final Text text0;
     protected final JFXTextField jFXTextField0;
     protected final GridPane gridPane2;
@@ -65,8 +68,14 @@ public class LoginBase extends GridPane {
     protected final RowConstraints rowConstraints11;
     protected final JFXButton jFXButton;
     protected final JFXButton jFXButton0;
+    
     private boolean logou = false;
+    private String login;
 
+    public String getLogin() {
+        return login;
+    }
+    
     private void fechaJanela() {
         Stage stage = (Stage) this.getScene().getWindow();
         stage.close();
@@ -75,7 +84,7 @@ public class LoginBase extends GridPane {
     public boolean isLogou() {
         return logou;
     }
-    
+
     public LoginBase() {
 
         columnConstraints = new ColumnConstraints();
@@ -96,9 +105,11 @@ public class LoginBase extends GridPane {
         rowConstraints6 = new RowConstraints();
         rowConstraints7 = new RowConstraints();
         rowConstraints8 = new RowConstraints();
-        jFXTextField = new JFXTextField();
-        text0 = new Text();
         jFXTextField0 = new JFXTextField();
+        jFXTextField0.setId("02");
+        jFXTextField = new JFXPasswordField();
+        jFXTextField.setId("01");
+        text0 = new Text();
         gridPane2 = new GridPane();
         columnConstraints3 = new ColumnConstraints();
         columnConstraints4 = new ColumnConstraints();
@@ -109,30 +120,27 @@ public class LoginBase extends GridPane {
         jFXButton0 = new JFXButton();
         jFXButton.setText("Sair");
         jFXButton0.setText("Entrar");
+        jFXButton0.setId("03");
+        jFXButton.setId("04");
         jFXButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 fechaJanela();
             }
         });
+        jFXTextField.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if (event.getCode().equals(
+                        KeyCode.ENTER)) {
+                    login();
+                }
+            }
+        });
         jFXButton0.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                try {
-                    if (login(jFXTextField0.getText(), Utils.md5(jFXTextField.getText()))) {
-                        logou = true;
-                        new Alert(Alert.AlertType.INFORMATION, "Usuário logado com sucesso").showAndWait();
-                        fechaJanela();
-                    } else {
-                        new Alert(Alert.AlertType.ERROR, "Usuário ou senha inválida!").showAndWait();
-                    }
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                    Logger.getLogger(LoginBase.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                    Logger.getLogger(LoginBase.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                login();
             }
         });
         setMaxHeight(USE_PREF_SIZE);
@@ -275,6 +283,25 @@ public class LoginBase extends GridPane {
         gridPane.getChildren().add(gridPane2);
         getChildren().add(gridPane);
 
+    }
+
+    private void login() {
+        try {
+            if (login(jFXTextField0.getText(), Utils.md5(jFXTextField.getText()))) {
+                logou = true;
+                new Alert(Alert.AlertType.INFORMATION, "Usuário logado com sucesso").showAndWait();
+                login = jFXTextField0.getText();
+                fechaJanela();
+            } else {
+                new Alert(Alert.AlertType.ERROR, "Usuário ou senha inválida!").showAndWait();
+            }
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+            Logger.getLogger(LoginBase.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            Logger.getLogger(LoginBase.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private static boolean login(final String login, final String senha) throws InterruptedException, IOException {
