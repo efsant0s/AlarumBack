@@ -56,8 +56,8 @@ public class Usuario {
         }
         this.dt_atualizacao = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date());
         this.nm_usuario = System.getProperty("user.name");
-        this.ds_pc_nome = ip == null ? "--" : ip.getHostAddress();
-        this.ds_pc_ip = ip == null ? "--" : ip.getCanonicalHostName();
+        this.ds_pc_nome = ip == null ? "--" : ip.getCanonicalHostName();
+        this.ds_pc_ip = ip == null ? "--" : ip.getHostAddress();
         this.ds_os_nome = System.getProperty("os.name");
         this.ds_os_versao = System.getProperty("os.version");
         this.ds_os_arquitetura = System.getProperty("os.arch");

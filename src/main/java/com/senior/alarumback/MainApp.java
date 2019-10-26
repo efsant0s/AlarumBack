@@ -71,7 +71,12 @@ public class MainApp extends Application {
             } catch (IOException ex) {
                 System.out.println(ex);
             }
-
+            stage.setOnHiding(new EventHandler<WindowEvent>() {
+                @Override
+                public void handle(WindowEvent t) {
+                    hide(stage);
+                }
+            });
             stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
                 @Override
                 public void handle(WindowEvent t) {

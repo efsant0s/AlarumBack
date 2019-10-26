@@ -13,6 +13,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.scene.control.Alert;
 
 /**
  *
@@ -21,6 +24,8 @@ import java.security.NoSuchAlgorithmException;
 public class Utils {
 
     public static void configuraInstancia() throws FileNotFoundException, IOException {
+        try{
+            
         FileInputStream serviceAccount;
 
         serviceAccount = new FileInputStream("D:\\Users\\Eduardo\\Downloads\\alarum_auth.json");
@@ -31,6 +36,13 @@ public class Utils {
                 .build();
 
         FirebaseApp.initializeApp(options);
+         } catch (Exception ex) {
+            new Alert(Alert.AlertType.ERROR, ex.getMessage()).showAndWait();
+            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
+            System.exit(0);
+        }
+        
     }
 
     private static String stringHexa(byte[] bytes) {
