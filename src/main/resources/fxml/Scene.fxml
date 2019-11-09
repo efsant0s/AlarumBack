@@ -57,7 +57,7 @@
                </rowConstraints>
                <children>
                   <Text fx:id="LabelGrupo" strokeType="OUTSIDE" strokeWidth="0.0" text="Grupo" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
-                  <JFXComboBox fx:id="listGroup" prefHeight="25.0" prefWidth="324.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <JFXComboBox fx:id="listGroup" onAction="#grupoListAction" prefHeight="25.0" prefWidth="324.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                </children>
             </GridPane>
             <JFXButton fx:id="salvarButton" onAction="#btnSalvarAction" text="Salvar" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2">

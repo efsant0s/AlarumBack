@@ -8,9 +8,12 @@ package com.senior.alarumback;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -24,25 +27,23 @@ import javafx.scene.control.Alert;
 public class Utils {
 
     public static void configuraInstancia() throws FileNotFoundException, IOException {
-        try{
-            
-        FileInputStream serviceAccount;
+        try {
+            InputStream path = Utils.class
+                    .getClassLoader().getResourceAsStream("acess/alarum_auth.json");
 
-        serviceAccount = new FileInputStream("D:\\Users\\Eduardo\\Downloads\\alarum_auth.json");
+            FirebaseOptions options = new FirebaseOptions.Builder()
+                    .setCredentials(GoogleCredentials.fromStream(path))
+                    .setDatabaseUrl("https://alarum-e97a3.firebaseio.com")
+                    .build();
 
-        FirebaseOptions options = new FirebaseOptions.Builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .setDatabaseUrl("https://alarum-e97a3.firebaseio.com")
-                .build();
-
-        FirebaseApp.initializeApp(options);
-         } catch (Exception ex) {
+            FirebaseApp.initializeApp(options);
+        } catch (Exception ex) {
             new Alert(Alert.AlertType.ERROR, ex.getMessage()).showAndWait();
             Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
             System.exit(0);
         }
-        
+
     }
 
     private static String stringHexa(byte[] bytes) {

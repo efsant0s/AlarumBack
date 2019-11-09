@@ -16,6 +16,7 @@ public class UsuarioLogin {
     private String ds_login;
     private String ds_senha;
     private String ds_email;
+    private String ie_admin;
 
     public UsuarioLogin() {
     }
@@ -24,6 +25,7 @@ public class UsuarioLogin {
         this.ds_email = email;
         this.ds_login = login;
         this.ds_senha = Utils.md5(senha);
+        this.ie_admin = "N";
     }
 
     public String getDs_login() {

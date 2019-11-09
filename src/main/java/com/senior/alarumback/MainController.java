@@ -32,6 +32,7 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -76,7 +77,7 @@ public class MainController implements Initializable {
 
     @FXML
     private Text labelAviso;
-    private static Grupo grupoAtual;
+    private static Grupo grupoAtual = new Grupo();
     private static boolean grupoConfigurado = false;
 
     public static boolean isGrupoConfigurado() {
@@ -94,6 +95,16 @@ public class MainController implements Initializable {
     }
 
     @FXML
+    void grupoListAction(ActionEvent event) {
+        try {
+            atualizaGerenciaSelecionada();
+        } catch (Exception ex) {
+            new Alert(Alert.AlertType.ERROR, ex.getMessage()).showAndWait();
+            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+        }  
+    }
+
+    @FXML
     void btnSairAction(ActionEvent event) {
         System.exit(0);
     }
@@ -105,15 +116,15 @@ public class MainController implements Initializable {
     private void atualizaGerenciaSelecionada() throws Exception {
         if (listGroup.getSelectionModel().getSelectedItem() == null) {
             throw new IOException("É necessário selecionar uma gerência");
-        }
+        } 
         this.gerenciaSelecionada = listGroup.getSelectionModel().getSelectedItem();
+        setListaGrupos(gerenciaSelecionada.getDs_gerencia());
     }
 
     @FXML
     void btnSalvarAction(ActionEvent event) {
 
         try {
-            atualizaGerenciaSelecionada();
             atualizaNomeUsuario();
             mandaInformacao();
             if (!isGrupoConfigurado()) {
@@ -134,15 +145,14 @@ public class MainController implements Initializable {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRootRef = database.getReference();
         DatabaseReference dbrBanco = myRootRef.child("banco");
-        Grupo grupo = getListaGrupos(gerenciaSelecionada.getDs_gerencia());
         DatabaseReference dbrGrupo = dbrBanco.child(gerenciaSelecionada.getDs_gerencia());
 
-        if (grupo != null && grupo.getUsuarios() != null && grupo.getUsuarios().size() >= 1 && grupo.getUsuarios().containsKey(getNomeUsuario())) {
+        if (grupoAtual != null && grupoAtual.getUsuarios() != null && grupoAtual.getUsuarios().size() >= 1 && grupoAtual.getUsuarios().containsKey(getNomeUsuario())) {
             DatabaseReference dbrUsuarios = dbrGrupo.child("usuarios");
             dbrUsuarios.child(getNomeUsuario()).setValueAsync(new Usuario(getNomeUsuario()));
         } else {
-            grupo = colocaValorGrupo(grupo);
-            dbrGrupo.setValueAsync(grupo);
+            grupoAtual = colocaValorGrupo(grupoAtual);
+            dbrGrupo.setValueAsync(grupoAtual);
         }
     }
 
@@ -203,30 +213,27 @@ public class MainController implements Initializable {
         return gerenciaSelecionada;
     }
 
-    private static Grupo getListaGrupos(String dev) throws InterruptedException, IOException {
-        final AtomicBoolean done = new AtomicBoolean(false);
+    private static void setListaGrupos(String dev) throws InterruptedException, IOException {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRootRef = database.getReference();
-        DatabaseReference bancoRef = myRootRef.child("banco");
-        final DatabaseReference userRef = bancoRef.child(dev);
-        final Grupo grupo = new Grupo();
-        ValueEventListener listener = new ValueEventListener() {
+        final DatabaseReference grupoRef = database.getReference().child("banco").child(dev);
+        grupoRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 try {
-                    
                     Grupo getGrupo = dataSnapshot.getValue(Grupo.class);
                     if (getGrupo != null) {
-                        grupo.setGerencia(getGrupo.getGerencia());
-                        grupo.setUsuarios(getGrupo.getUsuarios());
+                        grupoAtual.setGerencia(getGrupo.getGerencia());
+                        grupoAtual.setUsuarios(getGrupo.getUsuarios());
+                    }else{
+                        grupoAtual = new Grupo();
+                        grupoAtual.setGerencia(gerenciaSelecionada);
+                        grupoAtual.setUsuarios(new HashMap<String, Usuario>());
                     }
-                    done.set(true); 
-                    
+
                 } catch (Exception e) {
                     //Log the exception and the key 
                     System.out.println(dataSnapshot.getKey());
                     e.printStackTrace();
-                    done.set(true); 
                 }
             }
 
@@ -234,12 +241,7 @@ public class MainController implements Initializable {
             public void onCancelled(DatabaseError databaseError) {
                 System.out.println(("err"));
             }
-        };
-        userRef.addListenerForSingleValueEvent(listener);
-        while (!done.get()); 
-        userRef.removeEventListener(listener);
-        return grupo;
-
+        });
     }
 
     public static List<Gerencia> getListaGerencias() throws InterruptedException, IOException {
@@ -260,14 +262,14 @@ public class MainController implements Initializable {
                     }
                     done.set(true);
                     userRef.removeEventListener(this);
-                    
+
                 } catch (Exception e) {
                     //Log the exception and the key 
                     System.out.println(dataSnapshot.getKey());
                     e.printStackTrace();
                     done.set(true);
                     userRef.removeEventListener(this);
-                    
+
                 }
             }
 
@@ -323,6 +325,7 @@ public class MainController implements Initializable {
     }
 
     private static Grupo colocaValorGrupo(Grupo grupo) {
+         
         if (grupo == null) {
             grupo = new Grupo();
             grupo.setGerencia(getGerenciaSelecionada());
@@ -335,6 +338,14 @@ public class MainController implements Initializable {
             grupo.setUsuarios(usuariosAtuais);
         }
         return grupo;
+    }
+
+    private void removeUsuarioBanco() {
+        if(grupoAtual != null && grupoAtual.getUsuarios() !=null){
+            grupoAtual.getUsuarios().remove(getNomeUsuario());
+            
+        }
+        
     }
 
 }
