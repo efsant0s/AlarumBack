@@ -46,7 +46,8 @@ public class MainApp extends Application {
 
             stage.setTitle("Alarum");
             stage.setScene(scene);
-            stage.show(); 
+            stage.show();
+            LoginBase.lista();
         } catch (Exception ex) {
             ex.printStackTrace();
             Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);

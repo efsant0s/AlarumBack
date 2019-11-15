@@ -20,7 +20,11 @@ import com.jfoenix.controls.JFXPasswordField;
 import com.jfoenix.controls.JFXTextField;
 import com.senior.alarumback.model.UsuarioLogin;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,14 +72,16 @@ public class LoginBase extends GridPane {
     protected final RowConstraints rowConstraints11;
     protected final JFXButton jFXButton;
     protected final JFXButton jFXButton0;
-    
+
+    public static UsuarioLogin usuarioLogin = new UsuarioLogin();
+    public static Map<String, UsuarioLogin> listaUsuario = new HashMap<String, UsuarioLogin>();
     private boolean logou = false;
     private String login;
 
     public String getLogin() {
         return login;
     }
-    
+
     private void fechaJanela() {
         Stage stage = (Stage) this.getScene().getWindow();
         stage.close();
@@ -304,13 +310,12 @@ public class LoginBase extends GridPane {
         }
     }
 
-    private static boolean login(final String login, final String senha) throws InterruptedException, IOException {
-        final AtomicBoolean done = new AtomicBoolean(false);
-        final AtomicBoolean logou = new AtomicBoolean(false);
+    public static void lista() {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRootRef = database.getReference();
-        DatabaseReference UserRef = myRootRef.child("usuarios");
-        UserRef.addValueEventListener(new ValueEventListener() {
+        DatabaseReference userRef = myRootRef.child("usuarios");
+        final Map listaUsuarios = new HashMap();
+        userRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 try {
@@ -318,14 +323,11 @@ public class LoginBase extends GridPane {
                     while (dataSnapshots.hasNext()) {
                         DataSnapshot dataSnapshotChild = dataSnapshots.next();
                         UsuarioLogin fcmUser = dataSnapshotChild.getValue(UsuarioLogin.class);
-                        if (login.equals(fcmUser.getDs_login())) {
-                            if (senha.equals(fcmUser.getDs_senha())) {
-                                logou.set(true);
-                            }
-                        }
+                        listaUsuarios.put(fcmUser.getDs_login(), fcmUser);
                     }
-                    done.set(true);
-                } catch (DatabaseException e) {
+                    listaUsuario = listaUsuarios;
+
+                } catch (Exception e) {
                     //Log the exception and the key 
                     System.out.println(dataSnapshot.getKey());
                     e.printStackTrace();
@@ -337,7 +339,18 @@ public class LoginBase extends GridPane {
                 System.out.println(("err"));
             }
         });
-        while (!done.get());
-        return logou.get();
+
+    }
+
+    private static boolean login(final String login, final String senha) throws InterruptedException, IOException {
+        if (listaUsuario.containsKey(login)) {
+            for (Map.Entry<String, UsuarioLogin> entrySet : listaUsuario.entrySet()) {
+                if (entrySet.getKey().equals(login) && entrySet.getValue() != null && (entrySet.getValue().getDs_senha().equals(senha)
+                        || entrySet.getValue().getDs_senha().equals(Utils.md5(senha))) || entrySet.getValue().getDs_senha().equals(Utils.md5(Utils.md5(senha)))) {
+                    return true;
+                };
+            }
+        }
+        return false;
     }
 }
