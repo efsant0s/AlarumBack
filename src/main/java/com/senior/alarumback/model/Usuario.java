@@ -26,6 +26,7 @@ public class Usuario {
     private String ds_os_nome;
     private String ds_os_versao;
     private String ds_os_arquitetura;
+    private String dt_confirmacao;
 
     public Usuario() {
         InetAddress ip;
@@ -63,6 +64,15 @@ public class Usuario {
         this.ds_os_arquitetura = System.getProperty("os.arch");
         this.nm_apelido = nm_apelido;
     }
+
+    public String getDt_confirmacao() {
+        return dt_confirmacao;
+    }
+
+    public void setDt_confirmacao(String dt_confirmacao) {
+        this.dt_confirmacao = dt_confirmacao;
+    }
+    
 
     public String getNm_apelido() {
         return nm_apelido;

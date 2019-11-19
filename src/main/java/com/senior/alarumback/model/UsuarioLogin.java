@@ -21,12 +21,21 @@ public class UsuarioLogin {
     public UsuarioLogin() {
     }
 
-    public UsuarioLogin(String login, String email,  String senha) {
+    public String getIe_admin() {
+        return ie_admin;
+    }
+
+    public void setIe_admin(String ie_admin) {
+        this.ie_admin = ie_admin;
+    }
+
+    public UsuarioLogin(String login, String email, String senha) {
         this.ds_email = email;
         this.ds_login = login;
         this.ds_senha = Utils.md5(senha);
         this.ie_admin = "N";
     }
+
 
     public String getDs_login() {
         return ds_login;

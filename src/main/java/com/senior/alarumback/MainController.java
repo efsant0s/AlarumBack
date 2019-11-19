@@ -12,7 +12,6 @@ import com.senior.alarumback.model.Gerencia;
 import com.senior.alarumback.model.Grupo;
 import com.senior.alarumback.model.Mensagem;
 import com.senior.alarumback.model.Usuario;
-import com.senior.alarumback.model.UsuarioLogin;
 import javafx.event.ActionEvent;
 import java.io.IOException;
 import java.net.URL;
@@ -25,24 +24,19 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.event.EventType;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.SingleSelectionModel;
+import javafx.scene.control.ButtonType;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import javax.swing.JOptionPane;
 
 public class MainController implements Initializable {
 
@@ -99,9 +93,9 @@ public class MainController implements Initializable {
         try {
             atualizaGerenciaSelecionada();
         } catch (Exception ex) {
-            new Alert(Alert.AlertType.ERROR, ex.getMessage()).showAndWait();
+            Utils.mostraException(ex);
             Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
-        }  
+        }
     }
 
     @FXML
@@ -116,7 +110,7 @@ public class MainController implements Initializable {
     private void atualizaGerenciaSelecionada() throws Exception {
         if (listGroup.getSelectionModel().getSelectedItem() == null) {
             throw new IOException("É necessário selecionar uma gerência");
-        } 
+        }
         this.gerenciaSelecionada = listGroup.getSelectionModel().getSelectedItem();
         setListaGrupos(gerenciaSelecionada.getDs_gerencia());
     }
@@ -126,7 +120,7 @@ public class MainController implements Initializable {
 
         try {
             atualizaNomeUsuario();
-            mandaInformacao();
+            mandaInformacaoAtualizacao();
             if (!isGrupoConfigurado()) {
                 configuraNotificacao(gerenciaSelecionada.getDs_gerencia());
             }
@@ -135,13 +129,13 @@ public class MainController implements Initializable {
             fechaJanela();
 
         } catch (Exception ex) {
-            new Alert(Alert.AlertType.ERROR, ex.getMessage()).showAndWait();
+            Utils.mostraException(ex);
             Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
         }
     }
 
-    public static void mandaInformacao() throws InterruptedException, IOException {
+    public static void mandaInformacaoAtualizacao() throws InterruptedException, IOException {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRootRef = database.getReference();
         DatabaseReference dbrBanco = myRootRef.child("banco");
@@ -150,6 +144,23 @@ public class MainController implements Initializable {
         if (grupoAtual != null && grupoAtual.getUsuarios() != null && grupoAtual.getUsuarios().size() >= 1 && grupoAtual.getUsuarios().containsKey(getNomeUsuario())) {
             DatabaseReference dbrUsuarios = dbrGrupo.child("usuarios");
             dbrUsuarios.child(getNomeUsuario()).setValueAsync(new Usuario(getNomeUsuario()));
+        } else {
+            grupoAtual = colocaValorGrupo(grupoAtual);
+            dbrGrupo.setValueAsync(grupoAtual);
+        }
+    }
+
+    public static void mandaInformacaoConfirmacao() throws InterruptedException, IOException {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRootRef = database.getReference();
+        DatabaseReference dbrBanco = myRootRef.child("banco");
+        DatabaseReference dbrGrupo = dbrBanco.child(gerenciaSelecionada.getDs_gerencia());
+
+        if (grupoAtual != null && grupoAtual.getUsuarios() != null && grupoAtual.getUsuarios().size() >= 1 && grupoAtual.getUsuarios().containsKey(getNomeUsuario())) {
+            DatabaseReference dbrUsuarios = dbrGrupo.child("usuarios");
+            Usuario usuario = new Usuario(getNomeUsuario());
+            usuario.setDt_confirmacao(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date()));
+            dbrUsuarios.child(getNomeUsuario()).setValueAsync(usuario);
         } else {
             grupoAtual = colocaValorGrupo(grupoAtual);
             dbrGrupo.setValueAsync(grupoAtual);
@@ -167,14 +178,14 @@ public class MainController implements Initializable {
                 try {
                     Mensagem mensagem = dataSnapshot.getValue(Mensagem.class);
                     if (mensagem != null && !passou5Mins(mensagem.getDt_atualizacao())) {
-                        mostraMensagem(mensagem.getDs_mensagem());
+                        mostraMensagem(mensagem);
 
-                        mandaInformacao();
+                        mandaInformacaoAtualizacao();
 
                     }
 
                 } catch (Exception e) {
-                    //Log the exception and the key 
+            Utils.mostraException(e);
                     System.out.println(dataSnapshot.getKey());
                     e.printStackTrace();
                 }
@@ -198,12 +209,30 @@ public class MainController implements Initializable {
         stage.close();
     }
 
-    public static void mostraMensagem(final String mensagem) {
+    public static void mostraMensagem(final Mensagem mensagem) {
         Platform.runLater(new Runnable() {
 
             @Override
             public void run() {
-                new Alert(Alert.AlertType.INFORMATION, mensagem).showAndWait();
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle(mensagem.getDs_titulo());
+                alert.setHeaderText(mensagem.getDs_mensagem());
+                alert.setContentText("Choose your option.");
+
+                ButtonType buttonTypeOne = new ButtonType("Confirmo que recebi a notificação e estou saindo");
+
+                alert.getButtonTypes().setAll(buttonTypeOne);
+
+                Optional<ButtonType> result = alert.showAndWait();
+                if (result.get() == buttonTypeOne) {
+                    try {
+                        mandaInformacaoConfirmacao();
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IOException ex) {
+                        Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
             }
         });
 
@@ -224,7 +253,7 @@ public class MainController implements Initializable {
                     if (getGrupo != null) {
                         grupoAtual.setGerencia(getGrupo.getGerencia());
                         grupoAtual.setUsuarios(getGrupo.getUsuarios());
-                    }else{
+                    } else {
                         grupoAtual = new Grupo();
                         grupoAtual.setGerencia(gerenciaSelecionada);
                         grupoAtual.setUsuarios(new HashMap<String, Usuario>());
@@ -308,6 +337,7 @@ public class MainController implements Initializable {
 
             atualizaVisibilidade();
         } catch (Exception ex) {
+            Utils.mostraException(ex);
             ex.printStackTrace();
             Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -319,13 +349,12 @@ public class MainController implements Initializable {
 
     }
 
-    public boolean isLoggedIn() {
-        //TODO 
+    public boolean isLoggedIn() { 
         return logged;
     }
 
     private static Grupo colocaValorGrupo(Grupo grupo) {
-         
+
         if (grupo == null) {
             grupo = new Grupo();
             grupo.setGerencia(getGerenciaSelecionada());
@@ -341,11 +370,11 @@ public class MainController implements Initializable {
     }
 
     private void removeUsuarioBanco() {
-        if(grupoAtual != null && grupoAtual.getUsuarios() !=null){
+        if (grupoAtual != null && grupoAtual.getUsuarios() != null) {
             grupoAtual.getUsuarios().remove(getNomeUsuario());
-            
+
         }
-        
+
     }
 
 }

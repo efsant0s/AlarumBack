@@ -11,7 +11,6 @@ package com.senior.alarumback;
  */
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
@@ -20,15 +19,11 @@ import com.jfoenix.controls.JFXPasswordField;
 import com.jfoenix.controls.JFXTextField;
 import com.senior.alarumback.model.UsuarioLogin;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -302,9 +297,11 @@ public class LoginBase extends GridPane {
                 new Alert(Alert.AlertType.ERROR, "Usuário ou senha inválida!").showAndWait();
             }
         } catch (InterruptedException ex) {
+            Utils.mostraException(ex);
             ex.printStackTrace();
             Logger.getLogger(LoginBase.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
+            Utils.mostraException(ex);
             ex.printStackTrace();
             Logger.getLogger(LoginBase.class.getName()).log(Level.SEVERE, null, ex);
         }

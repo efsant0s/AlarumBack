@@ -7,12 +7,8 @@ import java.awt.AWTException;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
-import java.awt.Toolkit;
 import java.awt.TrayIcon;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,6 +45,7 @@ public class MainApp extends Application {
             stage.show();
             LoginBase.lista();
         } catch (Exception ex) {
+            Utils.mostraException(ex);
             ex.printStackTrace();
             Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -76,9 +73,9 @@ public class MainApp extends Application {
 
                 URL url = System.class.getResource("/icons/alarum.png");
                 image = ImageIO.read(url);
-                stage.getIcons().add(new Image("/icons/alarum.png")); 
+                stage.getIcons().add(new Image("/icons/alarum.png"));
             } catch (Exception ex) {
-                System.out.println(ex);
+                Utils.mostraException(ex);
             }
             stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
                 @Override
@@ -126,6 +123,7 @@ public class MainApp extends Application {
             try {
                 tray.add(trayIcon);
             } catch (AWTException e) {
+                Utils.mostraException(e);
                 System.err.println(e);
             }
             // ...

@@ -8,17 +8,21 @@ package com.senior.alarumback;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 
 /**
  *
@@ -38,7 +42,7 @@ public class Utils {
 
             FirebaseApp.initializeApp(options);
         } catch (Exception ex) {
-            new Alert(Alert.AlertType.ERROR, ex.getMessage()).showAndWait();
+            Utils.mostraException(ex);
             Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
             System.exit(0);
@@ -61,6 +65,40 @@ public class Utils {
 
     public static String md5(String mensagem) {
         return stringHexa(gerarHash(mensagem, "MD5"));
+    }
+    
+    public static void mostraException(Exception ex) {
+        Alert alert = new Alert(AlertType.ERROR);
+        alert.setTitle("Erro na aplicação");
+        alert.setHeaderText("Favor mostra o erro ao administrador");
+        alert.setContentText(ex.getMessage());
+
+// Create expandable Exception.
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        ex.printStackTrace(pw);
+        String exceptionText = sw.toString();
+
+        Label label = new Label("The exception stacktrace was:");
+
+        TextArea textArea = new TextArea(exceptionText);
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
+
+        textArea.setMaxWidth(Double.MAX_VALUE);
+        textArea.setMaxHeight(Double.MAX_VALUE);
+        GridPane.setVgrow(textArea, Priority.ALWAYS);
+        GridPane.setHgrow(textArea, Priority.ALWAYS);
+
+        GridPane expContent = new GridPane();
+        expContent.setMaxWidth(Double.MAX_VALUE);
+        expContent.add(label, 0, 0);
+        expContent.add(textArea, 0, 1);
+
+// Set expandable Exception into the dialog pane.
+        alert.getDialogPane().setExpandableContent(expContent);
+
+        alert.showAndWait();
     }
 
     private static byte[] gerarHash(String frase, String algoritmo) {
