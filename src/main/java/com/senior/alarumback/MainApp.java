@@ -44,6 +44,7 @@ public class MainApp extends Application {
             stage.setScene(scene);
             stage.show();
             LoginBase.lista();
+            ControleListaGrupos.lista();
         } catch (Exception ex) {
             Utils.mostraException(ex);
             ex.printStackTrace();

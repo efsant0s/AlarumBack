@@ -120,6 +120,7 @@ public class MainController implements Initializable {
 
         try {
             atualizaNomeUsuario();
+            removeUsuarioAnterior();
             mandaInformacaoAtualizacao();
             if (!isGrupoConfigurado()) {
                 configuraNotificacao(gerenciaSelecionada.getDs_gerencia());
@@ -143,11 +144,29 @@ public class MainController implements Initializable {
 
         if (grupoAtual != null && grupoAtual.getUsuarios() != null && grupoAtual.getUsuarios().size() >= 1 && grupoAtual.getUsuarios().containsKey(getNomeUsuario())) {
             DatabaseReference dbrUsuarios = dbrGrupo.child("usuarios");
-            dbrUsuarios.child(getNomeUsuario()).setValueAsync(new Usuario(getNomeUsuario()));
+            dbrUsuarios.child(getNomeUsuario()).setValueAsync(getUsuarioFull(getNomeUsuario(), true));
         } else {
             grupoAtual = colocaValorGrupo(grupoAtual);
             dbrGrupo.setValueAsync(grupoAtual);
         }
+    }
+
+    private static Usuario getUsuarioFull(String nm_usuario, boolean update) {
+        Map<String, Map<String, Usuario>> lista = ControleListaGrupos.getListaGrupos();
+        for (Map.Entry<String, Map<String, Usuario>> entrySet : lista.entrySet()) {
+            Map<String, Usuario> value = entrySet.getValue();
+            for (Map.Entry<String, Usuario> entrySet1 : value.entrySet()) {
+                if (nm_usuario.equalsIgnoreCase(entrySet1.getKey())) {
+                    Usuario user = entrySet1.getValue();
+                    if (update) {
+                        user.setDt_atualizacao(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date()));
+                    }
+                    return user;
+                }
+
+            }
+        }
+        return new Usuario(nm_usuario);
     }
 
     public static void mandaInformacaoConfirmacao() throws InterruptedException, IOException {
@@ -158,7 +177,7 @@ public class MainController implements Initializable {
 
         if (grupoAtual != null && grupoAtual.getUsuarios() != null && grupoAtual.getUsuarios().size() >= 1 && grupoAtual.getUsuarios().containsKey(getNomeUsuario())) {
             DatabaseReference dbrUsuarios = dbrGrupo.child("usuarios");
-            Usuario usuario = new Usuario(getNomeUsuario());
+            Usuario usuario = getUsuarioFull(getNomeUsuario(), false);
             usuario.setDt_confirmacao(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date()));
             dbrUsuarios.child(getNomeUsuario()).setValueAsync(usuario);
         } else {
@@ -177,15 +196,15 @@ public class MainController implements Initializable {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 try {
                     Mensagem mensagem = dataSnapshot.getValue(Mensagem.class);
-                    if (mensagem != null && !passou5Mins(mensagem.getDt_atualizacao())) {
+                    if (mensagem != null && !passou5Mins(mensagem.getDt_atualizacao()) && !confirmouRecebimentoMensagem()) {
                         mostraMensagem(mensagem);
-
                         mandaInformacaoAtualizacao();
-
+                    } else {
+                        System.out.println("Recebi mensagem, mas não passou 5 mins desde a última");
                     }
 
                 } catch (Exception e) {
-            Utils.mostraException(e);
+                    Utils.mostraException(e);
                     System.out.println(dataSnapshot.getKey());
                     e.printStackTrace();
                 }
@@ -198,7 +217,18 @@ public class MainController implements Initializable {
 
             private boolean passou5Mins(String dt_atualizacao) throws ParseException {
                 Date dataEnvioMensagem = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss").parse(dt_atualizacao);
-                return (((new java.util.Date()).getTime() - (dataEnvioMensagem.getTime())) / (1000 * 60)) > 1;
+                return (((new java.util.Date()).getTime() - (dataEnvioMensagem.getTime())) / (1000 * 60)) > 5;
+            }
+
+            private boolean confirmouRecebimentoMensagem() throws ParseException {
+                Usuario usuario = getUsuarioFull(getNomeUsuario(), false);
+                String dt_confirmacao = usuario.getDt_confirmacao();
+                if (dt_confirmacao == null) {
+                    return false;
+                } else {
+                    Date dataConfirmacao = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss").parse(dt_confirmacao);
+                    return (((new java.util.Date()).getTime() - (dataConfirmacao.getTime())) / (1000 * 60)) < 5;
+                }
             }
         });
     }
@@ -349,7 +379,7 @@ public class MainController implements Initializable {
 
     }
 
-    public boolean isLoggedIn() { 
+    public boolean isLoggedIn() {
         return logged;
     }
 
@@ -359,21 +389,38 @@ public class MainController implements Initializable {
             grupo = new Grupo();
             grupo.setGerencia(getGerenciaSelecionada());
             HashMap<String, Usuario> novaListaUsuarios = new HashMap<>();
-            novaListaUsuarios.put(getNomeUsuario(), new Usuario(getNomeUsuario()));
+            novaListaUsuarios.put(getNomeUsuario(), getUsuarioFull(getNomeUsuario(), true));
             grupo.setUsuarios(novaListaUsuarios);
+        } else if (grupo.getUsuarios() == null) {
+            Map<String, Usuario> usuariosAtuais = new HashMap<>();
+            usuariosAtuais.put(getNomeUsuario(), getUsuarioFull(getNomeUsuario(), true));
+            grupo.setUsuarios(usuariosAtuais);
         } else {
             Map<String, Usuario> usuariosAtuais = grupo.getUsuarios();
-            usuariosAtuais.put(getNomeUsuario(), new Usuario(getNomeUsuario()));
+            usuariosAtuais.put(getNomeUsuario(), getUsuarioFull(getNomeUsuario(), true));
             grupo.setUsuarios(usuariosAtuais);
         }
         return grupo;
     }
 
-    private void removeUsuarioBanco() {
-        if (grupoAtual != null && grupoAtual.getUsuarios() != null) {
-            grupoAtual.getUsuarios().remove(getNomeUsuario());
+    private void removeUsuarioAnterior() {
+        Map<String, Map<String, Usuario>> lista = ControleListaGrupos.getListaGrupos();
+        for (Map.Entry<String, Map<String, Usuario>> entrySet : lista.entrySet()) {
+            String gerencia = entrySet.getKey();
+            Map<String, Usuario> value = entrySet.getValue();
+            for (Map.Entry<String, Usuario> entrySet1 : value.entrySet()) {
+                if (getNomeUsuario().equalsIgnoreCase(entrySet1.getKey()) && !gerencia.equalsIgnoreCase(getGerenciaSelecionada().getDs_gerencia())) {
+                    removeUsuarioBanco(gerencia, entrySet1.getKey());
+                }
 
+            }
         }
+    }
+
+    private void removeUsuarioBanco(String gerencia, String usuario) {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference usuarioAnterior = database.getReference().child("banco").child(gerencia).child("usuarios").child(usuario);
+        usuarioAnterior.removeValueAsync();
 
     }
 

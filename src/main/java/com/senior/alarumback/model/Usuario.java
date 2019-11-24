@@ -106,4 +106,10 @@ public class Usuario {
         return ds_os_arquitetura;
     }
 
+    public void setDt_atualizacao(String dt_atualizacao) {
+        this.dt_atualizacao = dt_atualizacao;
+    }
+
+   
+
 }
