@@ -26,6 +26,7 @@ public class Usuario {
     private String ds_os_nome;
     private String ds_os_versao;
     private String ds_os_arquitetura;
+    private String dt_confirmacao;
 
     public Usuario() {
         InetAddress ip;
@@ -56,13 +57,22 @@ public class Usuario {
         }
         this.dt_atualizacao = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date());
         this.nm_usuario = System.getProperty("user.name");
-        this.ds_pc_nome = ip == null ? "--" : ip.getHostAddress();
-        this.ds_pc_ip = ip == null ? "--" : ip.getCanonicalHostName();
+        this.ds_pc_nome = ip == null ? "--" : ip.getCanonicalHostName();
+        this.ds_pc_ip = ip == null ? "--" : ip.getHostAddress();
         this.ds_os_nome = System.getProperty("os.name");
         this.ds_os_versao = System.getProperty("os.version");
         this.ds_os_arquitetura = System.getProperty("os.arch");
         this.nm_apelido = nm_apelido;
     }
+
+    public String getDt_confirmacao() {
+        return dt_confirmacao;
+    }
+
+    public void setDt_confirmacao(String dt_confirmacao) {
+        this.dt_confirmacao = dt_confirmacao;
+    }
+    
 
     public String getNm_apelido() {
         return nm_apelido;
@@ -95,5 +105,11 @@ public class Usuario {
     public String getDs_os_arquitetura() {
         return ds_os_arquitetura;
     }
+
+    public void setDt_atualizacao(String dt_atualizacao) {
+        this.dt_atualizacao = dt_atualizacao;
+    }
+
+   
 
 }

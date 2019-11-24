@@ -1,25 +1,22 @@
 package com.senior.alarumback;
 
-import java.awt.TrayIcon;
-import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
 import java.awt.AWTException;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
-import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javax.imageio.ImageIO;
@@ -31,17 +28,28 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        createTrayIcon(stage);
-        firstTime = true;
-        Platform.setImplicitExit(false);
-        Parent root = FXMLLoader.load(getClass().getResource("/fxml/Scene.fxml"));
+        try {
+            Utils.configuraInstancia();
+            createTrayIcon(stage);
+            firstTime = true;
+            Platform.setImplicitExit(false);
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("/fxml/Scene.fxml"));
+            Parent root = loader.load();
 
-        Scene scene = new Scene(root);
-        scene.getStylesheets().add("/styles/Styles.css");
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add("/styles/Styles.css");
 
-        stage.setTitle("JavaFX and Maven");
-        stage.setScene(scene);
-        stage.show();
+            stage.setTitle("Alarum");
+            stage.setScene(scene);
+            stage.show();
+            LoginBase.lista();
+            ControleListaGrupos.lista();
+        } catch (Exception ex) {
+            Utils.mostraException(ex);
+            ex.printStackTrace();
+            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -63,12 +71,13 @@ public class MainApp extends Application {
             // load an image
             java.awt.Image image = null;
             try {
-                URL url = new URL("http://www.digitalphotoartistry.com/rose1.jpg");
-                image = ImageIO.read(url);
-            } catch (IOException ex) {
-                System.out.println(ex);
-            }
 
+                URL url = System.class.getResource("/icons/alarum.png");
+                image = ImageIO.read(url);
+                stage.getIcons().add(new Image("/icons/alarum.png"));
+            } catch (Exception ex) {
+                Utils.mostraException(ex);
+            }
             stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
                 @Override
                 public void handle(WindowEvent t) {
@@ -106,7 +115,8 @@ public class MainApp extends Application {
             popup.add(closeItem);
             /// ... add other items
             // construct a TrayIcon
-            trayIcon = new TrayIcon(image, "Title", popup);
+            trayIcon = new TrayIcon(image, "Alarum", popup);
+            trayIcon.setImage(image);
             // set the TrayIcon properties
             trayIcon.addActionListener(showListener);
             // ...
@@ -114,6 +124,7 @@ public class MainApp extends Application {
             try {
                 tray.add(trayIcon);
             } catch (AWTException e) {
+                Utils.mostraException(e);
                 System.err.println(e);
             }
             // ...

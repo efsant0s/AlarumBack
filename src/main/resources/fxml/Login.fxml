@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXPasswordField?>
 <?import com.jfoenix.controls.JFXTextField?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.layout.ColumnConstraints?>
@@ -8,7 +9,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Text?>
 
-<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="414.0" prefWidth="408.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="414.0" prefWidth="408.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.senior.alarumback.LoginController">
   <columnConstraints>
     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
   </columnConstraints>
@@ -49,15 +50,15 @@
                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                </rowConstraints>
                <children>
-                  <JFXTextField GridPane.rowIndex="1">
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Senha" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
+                  <JFXPasswordField fx:id="txtSenha" GridPane.rowIndex="1">
                      <GridPane.margin>
                         <Insets left="40.0" right="40.0" />
                      </GridPane.margin>
-                  </JFXTextField>
-                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Senha" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
+                  </JFXPasswordField>
                </children>
             </GridPane>
-            <JFXTextField>
+            <JFXTextField fx:id="txtLogin">
                <GridPane.margin>
                   <Insets left="40.0" right="40.0" />
                </GridPane.margin>
@@ -73,8 +74,8 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               </rowConstraints>
                <children>
-                  <JFXButton text="Modificar" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
-                  <JFXButton text="Entrar" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
+                  <JFXButton fx:id="btnCancelar" text="Cancelar" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
+                  <JFXButton fx:id="btnLogin" onAction="#btnLoginAction" text="Entrar" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
                </children>
             </GridPane>
          </children>

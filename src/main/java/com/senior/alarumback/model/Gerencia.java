@@ -10,8 +10,12 @@ package com.senior.alarumback.model;
  * @author Eduardo
  */
 public class Gerencia {
+
     private String ds_gerencia;
     private String nm_responsavel;
+
+    public Gerencia() {
+    }
 
     public Gerencia(String ds_gerencia, String nm_responsavel) {
         this.ds_gerencia = ds_gerencia;
@@ -34,5 +38,9 @@ public class Gerencia {
         this.nm_responsavel = nm_responsavel;
     }
 
-    
+    @Override
+    public String toString() {
+        return ds_gerencia;
+    }
+
 }
