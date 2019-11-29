@@ -32,20 +32,21 @@ public class Utils {
 
     public static void configuraInstancia() throws FileNotFoundException, IOException {
         try {
+            //Pegar arquivo de configuração
             InputStream path = Utils.class
                     .getClassLoader().getResourceAsStream("acess/alarum_auth.json");
-
+            //Configurar as opções de credenciais
             FirebaseOptions options = new FirebaseOptions.Builder()
                     .setCredentials(GoogleCredentials.fromStream(path))
                     .setDatabaseUrl("https://alarum-e97a3.firebaseio.com")
                     .build();
-
+            //Iniciar a conexão.
             FirebaseApp.initializeApp(options);
         } catch (Exception ex) {
-            Utils.mostraException(ex);
-            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+            Utils.mostraException(ex); //Mostrar o erro ao usuário.
+            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex); //StackTrace
             ex.printStackTrace();
-            System.exit(0);
+            System.exit(0);// Sair do sistema, pois já falhou na conexão inicial
         }
 
     }
