@@ -69,8 +69,13 @@ public class MainApp extends Application {
             // get the SystemTray instance
             SystemTray tray = SystemTray.getSystemTray();
             // load an image
+            java.awt.Image image = null;
+            
             try {
                 stage.getIcons().add(new Image("/icons/alarum.png"));
+                URL url = System.class.getResource("/icons/alarum.png");
+                image = ImageIO.read(url);
+                stage.getIcons().add(new Image("/icons/alarum.png")); 
             } catch (Exception ex) {
                 Utils.mostraException(ex);
             }
@@ -111,6 +116,7 @@ public class MainApp extends Application {
             popup.add(closeItem);
             /// ... add other items
             // set the TrayIcon properties
+            trayIcon = new TrayIcon(image, "Alarum", popup);
             if(trayIcon == null){
                 System.out.println("TrayIconVazio");
             }
